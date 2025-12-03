@@ -11,49 +11,41 @@
 <body>
     <p>hello</p>
 <script defer>
-(function() {
-  // Beállítások
-  var countdown = 5; // Hány másodperc a TELJES betöltés után
+/* Eredeti szerkezet + 5 másodperc delay */
 
-  function fireAllianzEvent() {
-    window.dataLayer = window.dataLayer || [];
-    window.dataLayer.push({
-      'event': 'optimonk-allianz-event'
-    });
+function triggerAllianzEvent() {
+    console.log("A visszaszámlálás indult (5 mp)...");
 
-    var event = new CustomEvent("optimonk-allianz-event", { bubbles: true });
+    // Itt a késleltetés: 5000 ms = 5 másodperc
+    setTimeout(function() {
+        
+        // 1. GTM rész
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({
+            'event': 'optimonk-allianz-event'
+        });
 
-    // QuickScroll minta alapján a documentElement-re lőjük
-    document.documentElement.dispatchEvent(event);
-    
-    console.warn("BUMM! OptiMonk trigger fired: optimonk-allianz-event");
-  }
+        // 2. Event létrehozása
+        // Fontos: a { bubbles: true } itt is kell, hogy az OptiMonk észrevegye!
+        var event = new CustomEvent("optimonk-allianz-event", { 
+            bubbles: true, 
+            cancelable: true 
+        });
 
-  function startTimer() {
-    console.log("Az oldal TELJESEN betöltött (képek is). Visszaszámlálás indul: " + countdown);
+        // 3. Esemény elküldése
+        document.dispatchEvent(event);
+        
+        console.log("optimonk allianz event pushed (5 mp késleltetéssel)");
 
-    var timer = setInterval(function() {
-      countdown--;
-      
-      if (countdown > 0) {
-        console.log("Visszaszámlálás: " + countdown + "...");
-      } else {
-        clearInterval(timer);
-        fireAllianzEvent();
-      }
-    }, 1000);
-  }
+    }, 5000); // <-- Itt állíthatod az időt (ms-ban)
+}
 
-  // --- ITT A VÁLTOZÁS ---
-  // A 'complete' állapot jelenti azt, hogy minden (képek, css) kész.
-  if (document.readyState === "complete") {
-    // Ha már véletlenül betöltött (pl. cache-ből gyorsan), azonnal indítunk
-    startTimer();
-  } else {
-    // Ha még tölt, megvárjuk a 'load' eseményt (nem a DOMContentLoaded-et)
-    window.addEventListener("load", startTimer);
-  }
-})();
+// Betöltés kezelése (eredeti logika)
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", triggerAllianzEvent);
+} else {
+    triggerAllianzEvent();
+}
 </script>
 </body>
 </html>
