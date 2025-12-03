@@ -10,15 +10,35 @@
 </head>
 <body>
     <p>hello</p>
-<script>
- $( document ).ready(function() {
-window.dataLayer = window.dataLayer || [];
-window.dataLayer.push({
-'event': 'optimonk-allianz-event'
-});
-window.dispatchEvent(new CustomEvent("optimonk-allianz-event"));
-console.log("OptiMonk trigger fired");
-});
+<script defer>
+  function triggerAllianzEvent() {
+    // 1. Opcionális: GTM (Google Tag Manager) adatküldés
+    // Ha használjátok a GTM-et, ez hasznos, de az OptiMonkhoz nem kötelező.
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      'event': 'optimonk-allianz-event'
+    });
+
+    // 2. Az esemény (Event) létrehozása
+    // A 'bubbles: true' biztosítja, hogy az esemény "látsszon" az egész dokumentumban.
+    var event = new CustomEvent("optimonk-allianz-event", {
+        bubbles: true, 
+        cancelable: true 
+    });
+
+    // 3. Esemény elsütése a DOCUMENT objektumon
+    // Ez a kritikus rész a kiegészítésed alapján ("document. módon")
+    document.dispatchEvent(event);
+    
+    console.log("Siker: Az 'optimonk-allianz-event' elküldve a document objektumra.");
+  }
+
+  // 4. Időzítés: Csak akkor fusson le, ha az oldal már betöltött
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", triggerAllianzEvent);
+  } else {
+    triggerAllianzEvent();
+  }
 </script>
 </body>
 </html>
