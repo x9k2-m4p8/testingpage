@@ -10,35 +10,48 @@
 </head>
 <body>
     <p>hello</p>
-<script>
+<script defer>
 (function() {
-  // Ez a függvény végzi a kilövést
+  // Beállítások
+  var countdown = 5; // Hány másodperc a TELJES betöltés után
+
   function fireAllianzEvent() {
-    // 1. DataLayer (marad, mert hasznos)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       'event': 'optimonk-allianz-event'
     });
 
-    console.log('OptiMonk trigger indítása...');
+    var event = new CustomEvent("optimonk-allianz-event", { bubbles: true });
 
-    // 2. Event létrehozása
-    // Beleraktam a { bubbles: true }-t a biztonság kedvéért, 
-    // de a lényeg a lenti sor (dispatchEvent).
-    const event = new CustomEvent("optimonk-allianz-event", { bubbles: true });
-
-    // 3. A KULCS: Ugyanoda lőjük, ahova a quickScroll kódod is tette
-    // A document.documentElement a <HTML> elemet jelenti.
+    // QuickScroll minta alapján a documentElement-re lőjük
     document.documentElement.dispatchEvent(event);
     
-    console.log('OptiMonk trigger fired: optimonk-allianz-event (on documentElement)');
+    console.warn("BUMM! OptiMonk trigger fired: optimonk-allianz-event");
   }
 
-  // 4. Időzítés: Azonnal fusson, ha kész az oldal (nem scrollra, mint a másik, hanem betöltésre)
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", fireAllianzEvent);
+  function startTimer() {
+    console.log("Az oldal TELJESEN betöltött (képek is). Visszaszámlálás indul: " + countdown);
+
+    var timer = setInterval(function() {
+      countdown--;
+      
+      if (countdown > 0) {
+        console.log("Visszaszámlálás: " + countdown + "...");
+      } else {
+        clearInterval(timer);
+        fireAllianzEvent();
+      }
+    }, 1000);
+  }
+
+  // --- ITT A VÁLTOZÁS ---
+  // A 'complete' állapot jelenti azt, hogy minden (képek, css) kész.
+  if (document.readyState === "complete") {
+    // Ha már véletlenül betöltött (pl. cache-ből gyorsan), azonnal indítunk
+    startTimer();
   } else {
-    fireAllianzEvent();
+    // Ha még tölt, megvárjuk a 'load' eseményt (nem a DOMContentLoaded-et)
+    window.addEventListener("load", startTimer);
   }
 })();
 </script>
