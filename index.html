@@ -11,34 +11,36 @@
 <body>
     <p>hello</p>
 <script defer>
-  function triggerAllianzEvent() {
-    // 1. Opcionális: GTM (Google Tag Manager) adatküldés
-    // Ha használjátok a GTM-et, ez hasznos, de az OptiMonkhoz nem kötelező.
+(function() {
+  // Ez a függvény végzi a kilövést
+  function fireAllianzEvent() {
+    // 1. DataLayer (marad, mert hasznos)
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       'event': 'optimonk-allianz-event'
     });
 
-    // 2. Az esemény (Event) létrehozása
-    // A 'bubbles: true' biztosítja, hogy az esemény "látsszon" az egész dokumentumban.
-    var event = new CustomEvent("optimonk-allianz-event", {
-        bubbles: true, 
-        cancelable: true 
-    });
+    console.log('OptiMonk trigger indítása...');
 
-    // 3. Esemény elsütése a DOCUMENT objektumon
-    // Ez a kritikus rész a kiegészítésed alapján ("document. módon")
-    document.dispatchEvent(event);
+    // 2. Event létrehozása
+    // Beleraktam a { bubbles: true }-t a biztonság kedvéért, 
+    // de a lényeg a lenti sor (dispatchEvent).
+    const event = new CustomEvent("optimonk-allianz-event", { bubbles: true });
+
+    // 3. A KULCS: Ugyanoda lőjük, ahova a quickScroll kódod is tette
+    // A document.documentElement a <HTML> elemet jelenti.
+    document.documentElement.dispatchEvent(event);
     
-    console.log("Siker: Az 'optimonk-allianz-event' elküldve a document objektumra.");
+    console.log('OptiMonk trigger fired: optimonk-allianz-event (on documentElement)');
   }
 
-  // 4. Időzítés: Csak akkor fusson le, ha az oldal már betöltött
+  // 4. Időzítés: Azonnal fusson, ha kész az oldal (nem scrollra, mint a másik, hanem betöltésre)
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", triggerAllianzEvent);
+    document.addEventListener("DOMContentLoaded", fireAllianzEvent);
   } else {
-    triggerAllianzEvent();
+    fireAllianzEvent();
   }
+})();
 </script>
 </body>
 </html>
